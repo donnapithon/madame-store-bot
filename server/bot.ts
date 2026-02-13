@@ -773,15 +773,6 @@ bot.on('text', async (ctx, next) => {
       return;
     }
 
-    if (state.step === 'add_bulk_stock' || state.step === 'add_stock_content') {
-      const items = text.split('==').map((item: string) => item.trim()).filter((item: string) => item.length > 0);
-      const stockItems = items.map((content: string) => ({ productId: state.data.productId, content }));
-      if (stockItems.length === 0) return ctx.reply('❌ Nenhum item válido. Use == para separar cada item.');
-      await storage.addStock(stockItems);
-      userStates.delete(userId);
-      await ctx.reply(`✅ ${stockItems.length} itens adicionados!`);
-      return;
-    }
 
     if (state.step === 'add_prod_name') {
       state.data.name = text;
