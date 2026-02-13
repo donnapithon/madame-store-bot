@@ -1018,7 +1018,7 @@ export async function startBot(webhookDomain?: string) {
 }
 
 bot.on('document', async (ctx) => {
-  if (ctx.from?.id !== ADMIN_ID) return;
+  console.log("Documento recebido de:", ctx.from?.id);
 
   const state = userStates.get(ctx.from.id);
   if (!state || (state.step !== 'add_bulk_stock' && state.step !== 'add_stock_content')) return;
