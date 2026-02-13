@@ -1021,7 +1021,7 @@ bot.on('document', async (ctx) => {
   if (ctx.from?.id !== ADMIN_ID) return;
 
   const state = userStates.get(ctx.from.id);
-  if (!state || state.step !== 'add_bulk_stock') return;
+  if (!state || (state.step !== 'add_bulk_stock' && state.step !== 'add_stock_content')) return;
 
   const file = ctx.message.document;
   if (!file.file_name.endsWith('.txt')) {
