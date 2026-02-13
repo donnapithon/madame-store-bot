@@ -422,29 +422,6 @@ bot.action(/^admin_rmstock_(\d+)$/, async (ctx) => {
   await ctx.reply('✅ Item de estoque removido!');
 });
 
-bot.hears('📦 ADICIONAR ESTOQUE', async (ctx) => {
-  if (ctx.from.id !== ADMIN_ID) return;
-  const cats = await storage.getCategories();
-  const buttons = cats.map((c: any) => [Markup.button.callback(c.name, `admin_addstock_cat_${c.id}`)]);
-  await ctx.reply('Selecione a CATEGORIA:', Markup.inlineKeyboard(buttons));
-});
-
-bot.action(/^admin_addstock_cat_(\d+)$/, async (ctx) => {
-  if (ctx.from!.id !== ADMIN_ID) return;
-  const catId = parseInt(ctx.match[1]);
-  const prods = await storage.getProductsByCategory(catId);
-  if (prods.length === 0) return ctx.reply('Nenhum produto nesta categoria.');
-  const buttons = prods.map((p) => [Markup.button.callback(p.name, `admin_addstock_prod_${p.id}`)]);
-  await ctx.reply('Selecione o PRODUTO:', Markup.inlineKeyboard(buttons));
-});
-
-bot.action(/^admin_addstock_prod_(\d+)$/, async (ctx) => {
-  if (ctx.from!.id !== ADMIN_ID) return;
-  const prodId = parseInt(ctx.match[1]);
-  userStates.set(ctx.from!.id, { step: 'add_stock_content', data: { productId: prodId } });
-  await ctx.reply('Envie o conteúdo do estoque (use == para separar cada item):');
-});
-
 bot.action(/^admin_user_add_(\d+)$/, async (ctx) => {
   if (ctx.from!.id !== ADMIN_ID) return;
   const targetId = parseInt(ctx.match[1]);
