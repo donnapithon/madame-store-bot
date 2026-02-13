@@ -296,7 +296,7 @@ bot.action(/^admin_bulkstock_prod_(\d+)$/, async (ctx) => {
   if (ctx.from!.id !== ADMIN_ID) return;
   const prodId = parseInt(ctx.match[1]);
   userStates.set(ctx.from!.id, { step: 'add_bulk_stock', data: { productId: prodId } });
-  await ctx.reply('Envie o conteúdo em massa (use == para separar cada item):');
+  await ctx.reply('📂 Envie o arquivo .txt com o estoque em massa:');
 });
 
 bot.hears('➕ ADICIONAR PRODUTO', async (ctx) => {
