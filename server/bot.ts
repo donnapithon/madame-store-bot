@@ -1025,3 +1025,39 @@ export async function startBot(webhookDomain?: string) {
     console.error('Failed to start bot:', e);
   }
 }
+
+bot.on('document', async (ctx) => {
+  if (ctx.from?.id !== ADMIN_ID) return;
+
+  const state = userStates.get(ctx.from.id);
+  if (!state || state.step !== 'add_bulk_stock') return;
+
+  const file = ctx.message.document;
+  if (!file.file_name.endsWith('.txt')) {
+    return ctx.reply('❌ Envie um arquivo .txt');
+  }
+
+  const fileLink = await ctx.telegram.getFileLink(file.file_id);
+  const response = await fetch(fileLink.href);
+  const text = await response.text();
+
+  const rawItems = text.split('==');
+  const stockItems = rawItems
+    .map(item => item.trim())
+    .filter(item => item.length > 0);
+
+  if (stockItems.length === 0) {
+    return ctx.reply('❌ Nenhum item válido encontrado.');
+  }
+
+  await storage.addStock(
+    stockItems.map(content => ({
+      productId: state.data.productId,
+      content
+    }))
+  );
+
+  userStates.delete(ctx.from.id);
+
+  await ctx.reply(`✅ ${stockItems.length} itens adicionados com sucesso via TXT!`);
+});
