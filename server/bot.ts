@@ -994,39 +994,51 @@ export async function startBot(webhookDomain?: string) {
   }
 }
 
+// ===== ESTOQUE EM MASSA VIA TXT =====
 bot.on('document', async (ctx) => {
-console.log("USER ID:", ctx.from?.id);
-console.log("ADMIN ID:", ADMIN_ID);
+    try {
+        if (ctx.from?.id !== ADMIN_ID) return;
 
-  const state = userStates.get(ctx.from.id);
-  if (!state || (state.step !== 'add_bulk_stock' && state.step !== 'add_stock_content')) return;
+        const state = userStates.get(ctx.from.id);
 
-  const file = ctx.message.document;
-  if (!file.file_name.endsWith('.txt')) {
-    return ctx.reply('❌ Envie um arquivo .txt');
-  }
+        // Só funciona quando estiver no modo estoque em massa
+        if (!state || state.step !== 'add_bulk_stock') return;
 
-  const fileLink = await ctx.telegram.getFileLink(file.file_id);
-  const response = await fetch(fileLink.href);
-  const text = await response.text();
+        const file = ctx.message.document;
 
-  const rawItems = text.split('==');
-  const stockItems = rawItems
-    .map(item => item.trim())
-    .filter(item => item.length > 0);
+        if (!file.file_name?.endsWith('.txt')) {
+            return ctx.reply('❌ Envie um arquivo .txt válido.');
+        }
 
-  if (stockItems.length === 0) {
-    return ctx.reply('❌ Nenhum item válido encontrado.');
-  }
+        await ctx.reply('📥 Processando arquivo...');
 
-  await storage.addStock(
-    stockItems.map(content => ({
-      productId: state.data.productId,
-      content
-    }))
-  );
+        const fileLink = await ctx.telegram.getFileLink(file.file_id);
+        const response = await fetch(fileLink.href);
+        const text = await response.text();
 
-  userStates.delete(ctx.from.id);
+        // separa usando ==
+        const stockItems = text
+            .split('==')
+            .map(item => item.trim())
+            .filter(item => item.length > 0);
 
-  await ctx.reply(`✅ ${stockItems.length} itens adicionados com sucesso via TXT!`);
+        if (stockItems.length === 0) {
+            return ctx.reply('❌ Nenhum item válido encontrado no TXT.');
+        }
+
+        await storage.addStock(
+            stockItems.map(content => ({
+                productId: state.data.productId,
+                content
+            }))
+        );
+
+        userStates.delete(ctx.from.id);
+
+        await ctx.reply(`✅ ${stockItems.length} itens adicionados via TXT com sucesso!`);
+
+    } catch (error) {
+        console.error("ERRO AO PROCESSAR TXT:", error);
+        await ctx.reply('❌ Erro ao processar o arquivo.');
+    }
 });
