@@ -7,7 +7,7 @@ import { eq, and, count, sum, desc } from 'drizzle-orm';
 import fs from 'fs';
 import path from 'path';
 
-const BOT_TOKEN = '8326693654:AAEcqomArgiSoHqFpLPT8pCA2Q1BjLMcJA8';
+const BOT_TOKEN = process.env.BOT_TOKEN as string;
 const ADMIN_ID = 7514490878;
 
 const bot = new Telegraf(BOT_TOKEN);
